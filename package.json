@@ -1,0 +1,52 @@
+{
+    "name": "flovatar-twitter-bot",
+    "version": "0.1.",
+    "description": "A Twitter bot for Flovatar events from the Flow blockchain",
+    "scripts": {
+        "build": "babel src -d build",
+        "check": "./node_modules/.bin/eslint src test",
+        "test": "jest --coverage",
+        "test:watch": "jest --coverage --watch",
+        "start": "npm run build; node build/index.js"
+    },
+    "jest": {
+        "reporters": [
+            "default",
+            "jest-junit"
+        ],
+        "coverageDirectory": "artifacts/coverage",
+        "coveragePathIgnorePatterns": [
+            "test"
+        ]
+    },
+    "jest-junit": {
+        "outputDirectory": "artifacts"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/C-3PFLO/flovatar-twitter-bot.git"
+    },
+    "author": "C-3PFLO",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/C-3PFLO/flovatar-twitter-bot/issues"
+    },
+    "homepage": "https://github.com/C-3PFLO/flovatar-twitter-bot#readme",
+    "devDependencies": {
+        "eslint": "^8.6.0",
+        "eslint-config-google": "^0.14.0",
+        "eslint-plugin-jest": "^23.17.1",
+        "jest": "^27.4.7",
+        "jest-junit": "^13.0.0"
+    },
+    "dependencies": {
+        "@babel/cli": "^7.10.3",
+        "@babel/core": "^7.10.3",
+        "@babel/preset-env": "^7.10.3",
+        "@onflow/fcl": "^0.0.78",
+        "@onflow/types": "^0.0.6",
+        "fcl-subscribe": "^0.1.2",
+        "retry-request": "^4.2.2",
+        "twitter-api-v2": "^1.9.1"
+    }
+}
