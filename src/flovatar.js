@@ -225,13 +225,16 @@ function parseEvent(event) {
     switch (event.type) {
     case Events.CREATED:
         options = {
-            mediaURL: IMAGE_BASE_URL + event.data.metadata.mint,
-            body: _buildFlovatarCreatedMessage(event),
+            mediaURL: 'http://images.flovatar.com/flovatar/gif/' + event.data.metadata.mint + '.gif',
+            // mediaURL: IMAGE_BASE_URL + event.data.metadata.mint,
+            mimeType: 'gif',
+            body: '[THIS IS A TEST]' + _buildFlovatarCreatedMessage(event),
         };
         break;
     case Events.FLOVATAR_PURCHASED:
         options = {
             mediaURL: IMAGE_BASE_URL + event.data.id,
+            mimeType: 'png',
             body: _buildFlovatarPurchasedMessage(event),
         };
         break;
@@ -239,6 +242,7 @@ function parseEvent(event) {
         event.data.templateID = _resolveTemplateID(event.data.id);
         options = {
             mediaURL: IMAGE_BASE_URL + 'template/' + event.data.templateID,
+            mimeType: 'png',
             body: _buildFlovatarComponentPurchasedMessage(event),
         };
         break;

@@ -47,7 +47,7 @@ function _uploadMedia(options) {
         debug('uploading media');
         return client.v1.uploadMedia(
             options.media,
-            { type: 'png' },
+            { mimeType: options.mimeType },
         ).then((mediaID) => {
             options.mediaID = mediaID;
             return Promise.resolve(options);
@@ -62,7 +62,7 @@ function _uploadMedia(options) {
  * @return {Promise}
  */
 function _tweet(options) {
-    debug('%s', options.body);
+    debug('tweeting: %s', options.body);
     return client.v2.tweet(
         options.body,
         options.mediaID ? {
@@ -99,7 +99,8 @@ function main() {
             event.data.price >= 50) {
             return flovatar.parseEvent(event)
                 .then(_uploadMedia)
-                .then(_tweet);
+                .then(_tweet)
+                .then(unsubscribe); // HACK
         } else {
             debug(
                 'skipping %s, price = %d',
@@ -113,7 +114,7 @@ function main() {
         debug('%O', error);
     };
 
-    subscribeToEvents(options);
+    const unsubscribe = subscribeToEvents(options);
 }
 
 main();
