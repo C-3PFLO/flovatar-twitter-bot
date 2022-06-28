@@ -1,6 +1,8 @@
 import request from 'retry-request';
 import sharp from 'sharp';
 
+import resolve from './resolve-find';
+
 const debug = require('debug')('flovatar');
 
 // HACK: this is a 1MB asset used to map from a flowID to the corresponding templateID.  This is a tactical solution until the contract is updated to include the templateID directly in the blockchain event.
@@ -40,14 +42,13 @@ function _getRarity(metadata) {
 /**
 * TO DO
 * @private
-* @param {String} creatorAddress
+* @param {Object} options
 * @return {String}
 */
-function _getCreatorURL(creatorAddress) {
-    return [
-        'https://flowscan.org/account',
-        creatorAddress,
-    ].join('/');
+function _getAddressURL(options) {
+    return options.resolvedAddress ?
+        'https://find.xyz/' + options.resolvedAddress :
+        'https://flowscan.org/account/' + options.address;
 }
 
 /**
@@ -111,13 +112,15 @@ function _getPriceString(price) {
  */
 function _buildFlovatarCreatedMessage(event) {
     return 'A Flovatar is born! #' + event.data.metadata.mint +
-        ' minted' + _getRarity(event.data.metadata) + '.' +
+        ' minted' +
+        (event.resolvedAddress ? ' by ' + event.resolvedAddress : '') +
+        _getRarity(event.data.metadata) + '.' +
         '\nFlovatar: ' +
         _getFlovatarUrl(
             event.data.metadata.mint,
             event.data.metadata.creatorAddress,
         ) +
-        '\nCreator: ' + _getCreatorURL(event.data.metadata.creatorAddress) +
+        '\nCreator: ' + _getAddressURL(event) +
         '\nTransaction: ' + _getTransactionURL(event.transactionId) +
         '\n#Flovatar #FlovatarDroid #FlovatarCreated';
 }
@@ -130,13 +133,15 @@ function _buildFlovatarCreatedMessage(event) {
  */
 function _buildFlovatarPurchasedMessage(event) {
     return 'Flovatar #' + event.data.id +
-        ' purchased for ' + _getPriceString(event.data.price) + ' $FLOW.' +
+        ' purchased' +
+        (event.resolvedAddress ? ' by ' + event.resolvedAddress : '') +
+        ' for ' + _getPriceString(event.data.price) + ' $FLOW.' +
         '\nFlovatar: ' +
         _getFlovatarUrl(
             event.data.id,
             event.data.to,
         ) +
-        '\nBuyer: ' + _getCreatorURL(event.data.to) +
+        '\nBuyer: ' + _getAddressURL(event) +
         '\nTransaction: ' + _getTransactionURL(event.transactionId) +
         '\n#Flovatar #FlovatarDroid #FlovatarPurchased';
 }
@@ -149,13 +154,15 @@ function _buildFlovatarPurchasedMessage(event) {
  */
 function _buildFlovatarComponentPurchasedMessage(event) {
     return 'Component #' + event.data.id +
-        ' purchased for ' + _getPriceString(event.data.price) + ' $FLOW.' +
+        ' purchased' +
+        (event.resolvedAddress ? ' by ' + event.resolvedAddress : '') +
+        ' for ' + _getPriceString(event.data.price) + ' $FLOW.' +
         '\nComponent: ' +
         _getComponentUrl(
             event.data.id,
             event.data.to,
         ) +
-        '\nBuyer: ' + _getCreatorURL(event.data.to) +
+        '\nBuyer: ' + _getAddressURL(event) +
         '\nTransaction: ' + _getTransactionURL(event.transactionId) +
         '\n#Flovatar #FlovatarDroid #ComponentPurchased';
 }
@@ -220,42 +227,47 @@ function _resolveTemplateID(flowID) {
  * @param {Object} event
  * @return {Promise}
  */
-function parseEvent(event) {
-    let options;
+function parse(event) {
+    const options = Object.assign({}, event);
     switch (event.type) {
     case Events.CREATED:
-        options = {
-            mediaURL: IMAGE_BASE_URL + event.data.metadata.mint,
-            body: _buildFlovatarCreatedMessage(event),
-        };
+        options.address = event.data.metadata.creatorAddress;
+        options.mediaURL = IMAGE_BASE_URL + event.data.metadata.mint;
+        options.bodyFunction = _buildFlovatarCreatedMessage;
         break;
     case Events.FLOVATAR_PURCHASED:
-        options = {
-            mediaURL: IMAGE_BASE_URL + event.data.id,
-            body: _buildFlovatarPurchasedMessage(event),
-        };
+        options.address = event.data.to;
+        options.mediaURL = IMAGE_BASE_URL + event.data.id;
+        options.bodyFunction = _buildFlovatarPurchasedMessage;
         break;
     case Events.FLOVATAR_COMPONENT_PURCHASED:
-        event.data.templateID = _resolveTemplateID(event.data.id);
-        options = {
-            mediaURL: IMAGE_BASE_URL + 'template/' + event.data.templateID,
-            body: _buildFlovatarComponentPurchasedMessage(event),
-        };
+        options.templateID = _resolveTemplateID(event.data.id);
+        options.address = event.data.to;
+        options.mediaURL = IMAGE_BASE_URL + 'template/' + options.templateID;
+        options.bodyFunction = _buildFlovatarComponentPurchasedMessage;
         break;
     default:
         break;
     }
-    return _requestMedia(options.mediaURL)
-        .then(_svgToPng)
+
+    return resolve(options.address)
+        .then((response) => {
+            if (response) {
+                options.resolvedAddress = response;
+            }
+        }).then(() => {
+            return _requestMedia(options.mediaURL)
+                .then(_svgToPng);
+        })
         .then((response) => {
             return Promise.resolve({
                 media: response,
-                body: options.body,
+                body: options.bodyFunction(options),
             });
         });
 }
 
 export {
     Events,
-    parseEvent,
+    parse,
 };
