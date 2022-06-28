@@ -62,7 +62,7 @@ function _uploadMedia(options) {
  * @return {Promise}
  */
 function _tweet(options) {
-    debug('%s', options.body);
+    debug('%O', options);
     return client.v2.tweet(
         options.body,
         options.mediaID ? {
@@ -97,7 +97,7 @@ function main() {
         // HACK: need to move this
         if (event.type !== flovatar.Events.FLOVATAR_COMPONENT_PURCHASED ||
             event.data.price >= 50) {
-            return flovatar.parseEvent(event)
+            return flovatar.parse(event)
                 .then(_uploadMedia)
                 .then(_tweet);
         } else {

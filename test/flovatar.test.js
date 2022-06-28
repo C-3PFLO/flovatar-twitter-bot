@@ -2,6 +2,7 @@ import * as flovatar from '../src/flovatar';
 
 import request from 'retry-request';
 import sharp from 'sharp';
+import resolve from '../src/resolve-find';
 
 import FlovatarCreated from './assets/Flovatar.Created.54057850';
 import FlovatarPurchased from './assets/FlovatarMarketplace.FlovatarPurchased.54386412';
@@ -9,6 +10,7 @@ import FlovatarComponentPurchased from './assets/FlovatarMarketplace.FlovatarCom
 
 jest.mock('retry-request');
 jest.mock('sharp');
+jest.mock('../src/resolve-find');
 
 const mockSharp = {
     resize: function() {
@@ -28,7 +30,7 @@ describe('flovatar', () => {
     afterEach(() => {
         jest.clearAllMocks();
     });
-    describe('parseEvent', () => {
+    describe('parse', () => {
         it('Events.CREATED', (done) => {
             request.mockImplementationOnce((url, options, callback) => {
                 expect(url).toEqual('https://flovatar.com/api/image/400');
@@ -38,14 +40,18 @@ describe('flovatar', () => {
                 expect(buffer).toEqual(new Buffer.from('some-response')); // eslint-disable-line
                 return mockSharp;
             });
-            flovatar.parseEvent(JSON.parse(FlovatarCreated)[0])
+            resolve.mockImplementationOnce((address) => {
+                expect(address).toEqual('0xe2ac87664d523884');
+                return Promise.resolve('its-me');
+            });
+            flovatar.parse(JSON.parse(FlovatarCreated)[0])
                 .then((response) => {
                     expect(response).toEqual({
                         media: 'media',
                         body:
-                            'A Flovatar is born! #400 minted [2 rare, 1 epic booster(s)].\n' +
+                            'A Flovatar is born! #400 minted by its-me [2 rare, 1 epic booster(s)].\n' +
                             'Flovatar: https://flovatar.com/flovatars/400/0xe2ac87664d523884\n' +
-                            'Creator: https://flowscan.org/account/0xe2ac87664d523884\n' +
+                            'Creator: https://find.xyz/its-me\n' +
                             'Transaction: https://flowscan.org/transaction/f0de372287d2125448d2e0114eb6f892d250c5a50fb12d96756baf29a3f9f4d7\n' +
                             '#Flovatar #FlovatarDroid #FlovatarCreated',
                     });
@@ -61,14 +67,18 @@ describe('flovatar', () => {
                 expect(buffer).toEqual(new Buffer.from('some-response')); // eslint-disable-line
                 return mockSharp;
             });
-            flovatar.parseEvent(JSON.parse(FlovatarPurchased)[0])
+            resolve.mockImplementationOnce((address) => {
+                expect(address).toEqual('0x50f56c66e76b9382');
+                return Promise.resolve('its-me');
+            });
+            flovatar.parse(JSON.parse(FlovatarPurchased)[0])
                 .then((response) => {
                     expect(response).toEqual({
                         media: 'media',
                         body:
-                            'Flovatar #569 purchased for 500 $FLOW.\n' +
+                            'Flovatar #569 purchased by its-me for 500 $FLOW.\n' +
                             'Flovatar: https://flovatar.com/flovatars/569/0x50f56c66e76b9382\n' +
-                            'Buyer: https://flowscan.org/account/0x50f56c66e76b9382\n' +
+                            'Buyer: https://find.xyz/its-me\n' +
                             'Transaction: https://flowscan.org/transaction/6a68b28e2b9a1b25cc4af9ced2613b22b1f2745d505b5fe4e7c483e3da144349\n' +
                             '#Flovatar #FlovatarDroid #FlovatarPurchased',
                     });
@@ -84,7 +94,11 @@ describe('flovatar', () => {
                 expect(buffer).toEqual(new Buffer.from('some-response')); // eslint-disable-line
                 return mockSharp;
             });
-            flovatar.parseEvent(JSON.parse(FlovatarComponentPurchased)[0])
+            resolve.mockImplementationOnce((address) => {
+                expect(address).toEqual('0xcecf0384aaf3dcd7');
+                return Promise.resolve(null);
+            });
+            flovatar.parse(JSON.parse(FlovatarComponentPurchased)[0])
                 .then((response) => {
                     expect(response).toEqual({
                         media: 'media',
