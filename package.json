@@ -48,6 +48,7 @@
         "@onflow/types": "^0.0.6",
         "debug": "^4.3.4",
         "fcl-subscribe": "^0.1.2",
+        "promise-retry": "^2.0.1",
         "request": "^2.88.2",
         "retry-request": "^5.0.1",
         "sharp": "^0.30.6",
