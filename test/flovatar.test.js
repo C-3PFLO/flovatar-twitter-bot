@@ -2,7 +2,8 @@ import * as flovatar from '../src/flovatar';
 
 import request from 'retry-request';
 import sharp from 'sharp';
-import resolve from '../src/resolve-find';
+import resolveFind from '../src/resolve-find';
+import { getComponentTemplateID } from '../src/flovatar-cadence';
 
 import FlovatarCreated from './assets/Flovatar.Created.54057850';
 import FlovatarPurchased from './assets/FlovatarMarketplace.FlovatarPurchased.54386412';
@@ -11,6 +12,7 @@ import FlovatarComponentPurchased from './assets/FlovatarMarketplace.FlovatarCom
 jest.mock('retry-request');
 jest.mock('sharp');
 jest.mock('../src/resolve-find');
+jest.mock('../src/flovatar-cadence');
 
 const mockSharp = {
     resize: function() {
@@ -40,7 +42,7 @@ describe('flovatar', () => {
                 expect(buffer).toEqual(new Buffer.from('some-response')); // eslint-disable-line
                 return mockSharp;
             });
-            resolve.mockImplementationOnce((address) => {
+            resolveFind.mockImplementationOnce((address) => {
                 expect(address).toEqual('0xe2ac87664d523884');
                 return Promise.resolve('its-me');
             });
@@ -67,7 +69,7 @@ describe('flovatar', () => {
                 expect(buffer).toEqual(new Buffer.from('some-response')); // eslint-disable-line
                 return mockSharp;
             });
-            resolve.mockImplementationOnce((address) => {
+            resolveFind.mockImplementationOnce((address) => {
                 expect(address).toEqual('0x50f56c66e76b9382');
                 return Promise.resolve('its-me');
             });
@@ -94,10 +96,15 @@ describe('flovatar', () => {
                 expect(buffer).toEqual(new Buffer.from('some-response')); // eslint-disable-line
                 return mockSharp;
             });
-            resolve.mockImplementationOnce((address) => {
+            resolveFind.mockImplementationOnce((address) => {
                 expect(address).toEqual('0xcecf0384aaf3dcd7');
                 return Promise.resolve(null);
             });
+            getComponentTemplateID.mockImplementationOnce(
+                (address, componentID) => {
+                    expect(address).toEqual('0xcecf0384aaf3dcd7');
+                    return Promise.resolve(75);
+                });
             flovatar.parse(JSON.parse(FlovatarComponentPurchased)[0])
                 .then((response) => {
                     expect(response).toEqual({
