@@ -4,6 +4,8 @@ import * as fcl from '@onflow/fcl';
 import { subscribeToEvents } from 'fcl-subscribe';
 import * as flovatar from './flovatar';
 
+import promiseRetry from 'promise-retry';
+
 // https://github.com/plhery/node-twitter-api-v2/blob/HEAD/doc/basics.md
 import { TwitterApi } from 'twitter-api-v2';
 
@@ -97,9 +99,15 @@ function main() {
         // HACK: need to move this
         if (event.type !== flovatar.Events.FLOVATAR_COMPONENT_PURCHASED ||
             event.data.price >= 50) {
-            return flovatar.parse(event)
-                .then(_uploadMedia)
-                .then(_tweet);
+            return promiseRetry((retry, number) => {
+                return flovatar.parse(event)
+                    .then(_uploadMedia)
+                    .then(_tweet)
+                    .catch((error) => {
+                        debug('%O', error);
+                        retry();
+                    });
+            });
         } else {
             debug(
                 'skipping %s, price = %d',
