@@ -5,7 +5,6 @@ import { subscribeToEvents } from 'fcl-subscribe';
 import * as flovatar from './flovatar';
 
 import promiseRetry from 'promise-retry';
-const debugRetry = require('debug')('flovatar-retry');
 
 // https://github.com/plhery/node-twitter-api-v2/blob/HEAD/doc/basics.md
 import { TwitterApi } from 'twitter-api-v2';
@@ -105,7 +104,7 @@ function main() {
                     .then(_uploadMedia)
                     .then(_tweet)
                     .catch((error) => {
-                        debugRetry('ERROR: %O', error);
+                        debug('%O', error);
                         retry();
                     });
             });
@@ -119,7 +118,7 @@ function main() {
         }
     };
     options.onError = function(error) {
-        debug('ERROR: %O', error);
+        debug('%O', error);
     };
 
     subscribeToEvents(options);
