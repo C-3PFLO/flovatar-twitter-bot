@@ -11,6 +11,8 @@ import { TwitterApi } from 'twitter-api-v2';
 
 const debug = require('debug')('flovatar-twitter-bot');
 
+const PRICE_THRESHOLD = 50;
+
 const client = new TwitterApi({
     appKey: process.env.API_KEY,
     appSecret: process.env.APP_SECRET,
@@ -98,7 +100,7 @@ function main() {
         debug('onEvent %s', event.type);
         // HACK: need to move this
         if (event.type !== flovatar.Events.FLOVATAR_COMPONENT_PURCHASED ||
-            event.data.price >= 50) {
+            event.data.price >= PRICE_THRESHOLD) {
             return promiseRetry((retry, number) => {
                 return flovatar.parse(event)
                     .then(_uploadMedia)

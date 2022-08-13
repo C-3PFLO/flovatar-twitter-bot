@@ -1,14 +1,10 @@
 import request from 'retry-request';
 import sharp from 'sharp';
 
-import resolve from './resolve-find';
+import resolveFind from './resolve-find';
+import { getComponentTemplateID } from './flovatar-cadence';
 
 const debug = require('debug')('flovatar');
-
-// HACK: this is a 1MB asset used to map from a flowID to the corresponding templateID.  This is a tactical solution until the contract is updated to include the templateID directly in the blockchain event.
-import FlowIDToTemplateID from './assets/FlovatarComponentTemplate';
-
-let templateIDMap = null;
 
 const IMAGE_BASE_URL = 'https://flovatar.com/api/image/';
 
@@ -211,18 +207,6 @@ function _svgToPng(svg) {
 }
 
 /**
-* Given a flowID from an event blockEventData.id, resolve the corresponding templateID.
-* @private
-* @param {Integer} flowID
-* @return {Integer} templateID
-*/
-function _resolveTemplateID(flowID) {
-    templateIDMap = templateIDMap || JSON.parse(FlowIDToTemplateID);
-    const templateID = templateIDMap[flowID];
-    return templateID ? parseInt(templateID) : null;
-}
-
-/**
  * @public
  * @param {Object} event
  * @return {Promise}
@@ -242,20 +226,29 @@ function parse(event) {
         break;
     case Events.FLOVATAR_COMPONENT_PURCHASED:
         options.address = event.data.to;
-        options.templateID = _resolveTemplateID(event.data.id);
-        if (options.templateID) {
-            options.mediaURL = IMAGE_BASE_URL + 'template/' + options.templateID;
-        }
+        options.componentID = event.data.id;
         options.bodyFunction = _buildFlovatarComponentPurchasedMessage;
         break;
     default:
         break;
     }
 
-    return resolve(options.address)
+    return resolveFind(options.address)
         .then((response) => {
             if (response) {
                 options.resolvedAddress = response;
+            }
+        }).then(() => {
+            if (options.componentID) {
+                return getComponentTemplateID(
+                    options.address,
+                    options.componentID,
+                ).then((templateID) => {
+                    if (templateID) {
+                        options.mediaURL = IMAGE_BASE_URL +
+                            'template/' + templateID;
+                    }
+                });
             }
         }).then(() => {
             if (options.mediaURL) {
