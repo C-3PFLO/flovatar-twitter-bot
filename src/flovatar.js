@@ -241,9 +241,11 @@ function parse(event) {
         options.bodyFunction = _buildFlovatarPurchasedMessage;
         break;
     case Events.FLOVATAR_COMPONENT_PURCHASED:
-        options.templateID = _resolveTemplateID(event.data.id);
         options.address = event.data.to;
-        options.mediaURL = IMAGE_BASE_URL + 'template/' + options.templateID;
+        options.templateID = _resolveTemplateID(event.data.id);
+        if (options.templateID) {
+            options.mediaURL = IMAGE_BASE_URL + 'template/' + options.templateID;
+        }
         options.bodyFunction = _buildFlovatarComponentPurchasedMessage;
         break;
     default:
@@ -256,8 +258,11 @@ function parse(event) {
                 options.resolvedAddress = response;
             }
         }).then(() => {
-            return _requestMedia(options.mediaURL)
-                .then(_svgToPng);
+            if (options.mediaURL) {
+                return _requestMedia(options.mediaURL)
+                    .then(_svgToPng);
+            }
+            return Promise.resolve(null);
         })
         .then((response) => {
             return Promise.resolve({
