@@ -18,13 +18,13 @@ describe('flovatar-component', () => {
         }).then(done).catch(done);
     });
     it('booster', (done) => {
-        getComponentTemplateID('0x16ae8f1cbfceaa9e', 13534).then((response) => {
-            expect(response).toEqual(73);
+        getComponentTemplateID('0x16ae8f1cbfceaa9e', 31238).then((response) => {
+            expect(response).toEqual(75);
         }).then(done).catch(done);
     });
     it('flobit', (done) => {
-        getComponentTemplateID('0x16ae8f1cbfceaa9e', 79254).then((response) => {
-            expect(response).toEqual(509);
+        getComponentTemplateID('0x16ae8f1cbfceaa9e', 40486).then((response) => {
+            expect(response).toEqual(227);
         }).then(done).catch(done);
     });
     it('address not found', (done) => {
