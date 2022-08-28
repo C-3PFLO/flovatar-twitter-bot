@@ -6,7 +6,8 @@ import { getComponentTemplateID } from './flovatar-cadence';
 
 const debug = require('debug')('flovatar');
 
-const IMAGE_BASE_URL = 'https://flovatar.com/api/image/';
+const FLOVATAR_IMAGE_BASE_URL = 'https://images.flovatar.com/flovatar/png/';
+const COMPONENT_IMAGE_BASE_URL = 'https://flovatar.com/api/image/';
 
 const Events = {
     CREATED: 'A.921ea449dffec68a.Flovatar.Created',
@@ -216,17 +217,18 @@ function parse(event) {
     switch (event.type) {
     case Events.CREATED:
         options.address = event.data.metadata.creatorAddress;
-        options.mediaURL = IMAGE_BASE_URL + event.data.metadata.mint;
+        options.mediaURL = FLOVATAR_IMAGE_BASE_URL + event.data.metadata.mint + '.png';
         options.bodyFunction = _buildFlovatarCreatedMessage;
         break;
     case Events.FLOVATAR_PURCHASED:
         options.address = event.data.to;
-        options.mediaURL = IMAGE_BASE_URL + event.data.id;
+        options.mediaURL = FLOVATAR_IMAGE_BASE_URL + event.data.id + '.png';
         options.bodyFunction = _buildFlovatarPurchasedMessage;
         break;
     case Events.FLOVATAR_COMPONENT_PURCHASED:
         options.address = event.data.to;
         options.componentID = event.data.id;
+        options.svgToPng = true;
         options.bodyFunction = _buildFlovatarComponentPurchasedMessage;
         break;
     default:
@@ -245,7 +247,7 @@ function parse(event) {
                     options.componentID,
                 ).then((templateID) => {
                     if (templateID) {
-                        options.mediaURL = IMAGE_BASE_URL +
+                        options.mediaURL = COMPONENT_IMAGE_BASE_URL +
                             'template/' + templateID;
                     }
                 });
@@ -253,7 +255,12 @@ function parse(event) {
         }).then(() => {
             if (options.mediaURL) {
                 return _requestMedia(options.mediaURL)
-                    .then(_svgToPng);
+                    .then((media) => {
+                        if (options.svgToPng) {
+                            return _svgToPng(media);
+                        }
+                        return Promise.resolve(media);
+                    });
             }
             return Promise.resolve(null);
         })

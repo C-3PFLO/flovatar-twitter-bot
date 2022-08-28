@@ -35,12 +35,8 @@ describe('flovatar', () => {
     describe('parse', () => {
         it('Events.CREATED', (done) => {
             request.mockImplementationOnce((url, options, callback) => {
-                expect(url).toEqual('https://flovatar.com/api/image/400');
+                expect(url).toEqual('https://images.flovatar.com/flovatar/png/400.png');
                 callback(null, { statusCode: 200 }, 'some-response');
-            });
-            sharp.mockImplementationOnce((buffer) => {
-                expect(buffer).toEqual(new Buffer.from('some-response')); // eslint-disable-line
-                return mockSharp;
             });
             resolveFind.mockImplementationOnce((address) => {
                 expect(address).toEqual('0xe2ac87664d523884');
@@ -48,8 +44,9 @@ describe('flovatar', () => {
             });
             flovatar.parse(JSON.parse(FlovatarCreated)[0])
                 .then((response) => {
+                    expect(sharp).not.toHaveBeenCalled();
                     expect(response).toEqual({
-                        media: 'media',
+                        media: 'some-response',
                         body:
                             'A Flovatar is born! #400 minted by its-me [2 rare, 1 epic booster(s)].\n' +
                             'Flovatar: https://flovatar.com/flovatars/400/0xe2ac87664d523884\n' +
@@ -62,12 +59,8 @@ describe('flovatar', () => {
         });
         it('Events.FLOVATAR_PURCHASED', (done) => {
             request.mockImplementationOnce((url, options, callback) => {
-                expect(url).toEqual('https://flovatar.com/api/image/569');
+                expect(url).toEqual('https://images.flovatar.com/flovatar/png/569.png');
                 callback(null, { statusCode: 200 }, 'some-response');
-            });
-            sharp.mockImplementationOnce((buffer) => {
-                expect(buffer).toEqual(new Buffer.from('some-response')); // eslint-disable-line
-                return mockSharp;
             });
             resolveFind.mockImplementationOnce((address) => {
                 expect(address).toEqual('0x50f56c66e76b9382');
@@ -75,8 +68,9 @@ describe('flovatar', () => {
             });
             flovatar.parse(JSON.parse(FlovatarPurchased)[0])
                 .then((response) => {
+                    expect(sharp).not.toHaveBeenCalled();
                     expect(response).toEqual({
-                        media: 'media',
+                        media: 'some-response',
                         body:
                             'Flovatar #569 purchased by its-me for 500 $FLOW.\n' +
                             'Flovatar: https://flovatar.com/flovatars/569/0x50f56c66e76b9382\n' +
