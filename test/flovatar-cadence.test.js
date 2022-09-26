@@ -17,12 +17,12 @@ describe('flovatar-component', () => {
             expect(response).toEqual(458);
         }).then(done).catch(done);
     });
-    it('booster', (done) => {
+    xit('booster', (done) => {
         getComponentTemplateID('0x16ae8f1cbfceaa9e', 13534).then((response) => {
             expect(response).toEqual(73);
         }).then(done).catch(done);
     });
-    it('flobit', (done) => {
+    xit('flobit', (done) => {
         getComponentTemplateID('0x16ae8f1cbfceaa9e', 79254).then((response) => {
             expect(response).toEqual(509);
         }).then(done).catch(done);
