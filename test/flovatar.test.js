@@ -8,6 +8,7 @@ import { getComponentTemplateID } from '../src/flovatar-cadence';
 import FlovatarCreated from './assets/Flovatar.Created.54057850';
 import FlovatarPurchased from './assets/FlovatarMarketplace.FlovatarPurchased.54386412';
 import FlovatarComponentPurchased from './assets/FlovatarMarketplace.FlovatarComponentPurchased.54395614';
+import FlobotCreated from './assets/Flobot.Created.54057850';
 
 jest.mock('retry-request');
 jest.mock('sharp');
@@ -118,6 +119,32 @@ describe('flovatar', () => {
                     });
                     done();
                 });
+        });
+        it('Events.CREATED', (done) => {
+            request.mockImplementationOnce((url, options, callback) => {
+                expect(url).toEqual('https://flovatar.com/api/image/flobot/97');
+                callback(null, { statusCode: 200 }, 'some-response');
+            });
+            sharp.mockImplementationOnce((buffer) => {
+                expect(buffer).toEqual(new Buffer.from('some-response')); // eslint-disable-line
+                return mockSharp;
+            });
+            resolveFind.mockImplementationOnce((address) => {
+                expect(address).toEqual('0xe2ac87664d523884');
+                return Promise.resolve('its-me');
+            });
+            flovatar.parse(JSON.parse(FlobotCreated)[0])
+                .then((response) => {
+                    expect(response).toEqual({
+                        media: 'media',
+                        body:
+                            'A Flobot is born! #97 minted by its-me [common].\n' +
+                            'Flovatar: https://flovatar.com/flobots/97/0xe2ac87664d523884\n' +
+                            'Creator: https://find.xyz/its-me\n' +
+                            'Transaction: https://flowscan.org/transaction/f0de372287d2125448d2e0114eb6f892d250c5a50fb12d96756baf29a3f9f4d7\n' +
+                            '#Flovatar #FlovatarDroid #FlobotCreated',
+                    });
+                }).then(done).catch(done);
         });
     });
 });

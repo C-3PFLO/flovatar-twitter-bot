@@ -12,6 +12,7 @@ const Events = {
     CREATED: 'A.921ea449dffec68a.Flovatar.Created',
     FLOVATAR_PURCHASED: 'A.921ea449dffec68a.FlovatarMarketplace.FlovatarPurchased',
     FLOVATAR_COMPONENT_PURCHASED: 'A.921ea449dffec68a.FlovatarMarketplace.FlovatarComponentPurchased',
+    FLOBOT_CREATED: 'A.921ea449dffec68a.Flobot.Created',
 };
 
 /**
@@ -36,6 +37,16 @@ function _getRarity(metadata) {
 }
 
 /**
+* Get rarity/booster string
+* @private
+* @param {Object} metadata
+* @return {String} rarity string
+*/
+function _getFlobotRarity(metadata) {
+    return ' [' + metadata.rarity + ']';
+}
+
+/**
 * TO DO
 * @private
 * @param {Object} options
@@ -57,6 +68,21 @@ function _getAddressURL(options) {
 function _getFlovatarUrl(mint, creatorAddress) {
     return [
         'https://flovatar.com/flovatars',
+        mint,
+        creatorAddress,
+    ].join('/');
+}
+
+/**
+* TO DO
+* @private
+* @param {String} mint
+* @param {String} creatorAddress
+* @return {String}
+*/
+function _getFlobotUrl(mint, creatorAddress) {
+    return [
+        'https://flovatar.com/flobots',
         mint,
         creatorAddress,
     ].join('/');
@@ -119,6 +145,27 @@ function _buildFlovatarCreatedMessage(event) {
         '\nCreator: ' + _getAddressURL(event) +
         '\nTransaction: ' + _getTransactionURL(event.transactionId) +
         '\n#Flovatar #FlovatarDroid #FlovatarCreated';
+}
+
+/**
+ * Builds a message (intended for use in a tweet body) from a Created event
+ * @private
+ * @param {Object} event
+ * @return {String} message
+ */
+function _buildFlobotCreatedMessage(event) {
+    return 'A Flobot is born! #' + event.data.metadata.mint +
+        ' minted' +
+        (event.resolvedAddress ? ' by ' + event.resolvedAddress : '') +
+        _getFlobotRarity(event.data.metadata) + '.' +
+        '\nFlovatar: ' +
+        _getFlobotUrl(
+            event.data.metadata.mint,
+            event.data.metadata.creatorAddress,
+        ) +
+        '\nCreator: ' + _getAddressURL(event) +
+        '\nTransaction: ' + _getTransactionURL(event.transactionId) +
+        '\n#Flovatar #FlovatarDroid #FlobotCreated';
 }
 
 /**
@@ -228,6 +275,11 @@ function parse(event) {
         options.address = event.data.to;
         options.componentID = event.data.id;
         options.bodyFunction = _buildFlovatarComponentPurchasedMessage;
+        break;
+    case Events.FLOBOT_CREATED:
+        options.address = event.data.metadata.creatorAddress;
+        options.mediaURL = 'https://flovatar.com/api/image/flobot/' + event.data.metadata.mint;
+        options.bodyFunction = _buildFlobotCreatedMessage;
         break;
     default:
         break;

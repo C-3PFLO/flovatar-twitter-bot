@@ -95,6 +95,7 @@ function main() {
         flovatar.Events.CREATED,
         flovatar.Events.FLOVATAR_PURCHASED,
         flovatar.Events.FLOVATAR_COMPONENT_PURCHASED,
+        flovatar.Events.FLOBOT_CREATED,
     ];
     options.onEvent = function(event) {
         debug('onEvent %s', event.type);
