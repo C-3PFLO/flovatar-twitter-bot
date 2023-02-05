@@ -6,7 +6,7 @@ import { getComponentTemplateID } from './flovatar-cadence';
 
 const debug = require('debug')('flovatar');
 
-const FLOVATAR_IMAGE_BASE_URL = 'https://images.flovatar.com/flovatar/png/';
+const FLOVATAR_IMAGE_BASE_URL = 'https://images.flovatar.com/flovatar/svg/';
 const COMPONENT_IMAGE_BASE_URL = 'https://flovatar.com/api/image/';
 
 const Events = {
@@ -217,12 +217,14 @@ function parse(event) {
     switch (event.type) {
     case Events.CREATED:
         options.address = event.data.metadata.creatorAddress;
-        options.mediaURL = FLOVATAR_IMAGE_BASE_URL + event.data.metadata.mint + '.png';
+        options.mediaURL = FLOVATAR_IMAGE_BASE_URL + event.data.metadata.mint + '.svg';
+        options.svgToPng = true;
         options.bodyFunction = _buildFlovatarCreatedMessage;
         break;
     case Events.FLOVATAR_PURCHASED:
         options.address = event.data.to;
-        options.mediaURL = FLOVATAR_IMAGE_BASE_URL + event.data.id + '.png';
+        options.mediaURL = FLOVATAR_IMAGE_BASE_URL + event.data.id + '.svg';
+        options.svgToPng = true;
         options.bodyFunction = _buildFlovatarPurchasedMessage;
         break;
     case Events.FLOVATAR_COMPONENT_PURCHASED:
